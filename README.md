@@ -18,8 +18,9 @@ This folder contains the Todo App and its app-local PRP references.
 4. Run `npm run dev`
 
 ## Deployment Notes
+- Set `JWT_SECRET` to a long random string in Railway before using login or registration.
 - For WebAuthn/passkeys in production, set `RP_ID` to your public hostname and `RP_ORIGIN` to your full site origin.
-- Example Railway values: `RP_ID=your-app.up.railway.app` and `RP_ORIGIN=https://your-app.up.railway.app`
+- Example Railway values: `JWT_SECRET=your-long-random-secret`, `RP_ID=your-app.up.railway.app`, and `RP_ORIGIN=https://your-app.up.railway.app`
 - If these env vars are omitted, the app now falls back to the incoming request host and protocol.
 
 ## References

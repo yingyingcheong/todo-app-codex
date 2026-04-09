@@ -10,7 +10,9 @@ const COOKIE_NAME = 'todo-app-session';
 
 function getSecret() {
   const secret = process.env.JWT_SECRET;
-  if (!secret) throw new Error('JWT_SECRET is required');
+  if (!secret) {
+    throw new Error('JWT_SECRET is required. Set it in your deployment environment before using authentication.');
+  }
   return new TextEncoder().encode(secret);
 }
 
