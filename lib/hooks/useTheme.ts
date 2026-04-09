@@ -11,16 +11,14 @@ function applyTheme(theme: ThemeMode) {
 }
 
 export function useTheme() {
-  const [theme, setTheme] = useState<ThemeMode>('light');
+  const [theme, setTheme] = useState<ThemeMode>('dark');
 
   useEffect(() => {
     const stored = window.localStorage.getItem(storageKey);
     const resolved =
       stored === 'light' || stored === 'dark'
         ? stored
-        : window.matchMedia('(prefers-color-scheme: dark)').matches
-          ? 'dark'
-          : 'light';
+        : 'dark';
 
     setTheme(resolved);
     applyTheme(resolved);
