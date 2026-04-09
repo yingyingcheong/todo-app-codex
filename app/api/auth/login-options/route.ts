@@ -2,7 +2,7 @@ import { generateAuthenticationOptions } from '@simplewebauthn/server';
 import type { AuthenticatorTransportFuture } from '@simplewebauthn/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticatorDB, userDB } from '@/lib/db';
-import { storeLoginChallenge } from '@/lib/webauthn';
+import { resolveWebAuthnConfig, storeLoginChallenge } from '@/lib/webauthn';
 
 const validTransports = new Set<AuthenticatorTransportFuture>(['ble', 'cable', 'hybrid', 'internal', 'nfc', 'smart-card', 'usb']);
 
@@ -29,8 +29,9 @@ export async function POST(request: NextRequest) {
   if (authenticators.length === 0) {
     return NextResponse.json({ error: 'No passkey registered for this username' }, { status: 400 });
   }
+  const { rpID } = resolveWebAuthnConfig(request);
   const options = await generateAuthenticationOptions({
-    rpID: process.env.RP_ID ?? 'localhost',
+    rpID,
     userVerification: 'preferred',
     allowCredentials: authenticators.map((authenticator) => ({
       id: authenticator.credential_id,

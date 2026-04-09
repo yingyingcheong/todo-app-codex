@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import type { NextRequest } from 'next/server';
 
 type ChallengePayload = {
   username: string;
@@ -9,6 +10,11 @@ type ChallengePayload = {
 const REGISTER_COOKIE = 'todo-register-challenge';
 const LOGIN_COOKIE = 'todo-login-challenge';
 const MAX_AGE_SECONDS = 60 * 10;
+
+type WebAuthnConfig = {
+  rpID: string;
+  origin: string;
+};
 
 function encodePayload(payload: ChallengePayload) {
   return Buffer.from(JSON.stringify(payload), 'utf8').toString('base64url');
@@ -21,6 +27,30 @@ function decodePayload(raw: string | undefined): ChallengePayload | null {
   } catch {
     return null;
   }
+}
+
+function firstHeaderValue(value: string | null) {
+  return value?.split(',')[0]?.trim() ?? null;
+}
+
+function getRequestHost(request: NextRequest) {
+  const forwardedHost = firstHeaderValue(request.headers.get('x-forwarded-host'));
+  return forwardedHost ?? request.headers.get('host') ?? request.nextUrl.host;
+}
+
+function getRequestProtocol(request: NextRequest) {
+  const forwardedProto = firstHeaderValue(request.headers.get('x-forwarded-proto'));
+  return forwardedProto ?? request.nextUrl.protocol.replace(/:$/, '');
+}
+
+export function resolveWebAuthnConfig(request: NextRequest): WebAuthnConfig {
+  const host = getRequestHost(request);
+  const protocol = getRequestProtocol(request);
+
+  return {
+    rpID: process.env.RP_ID ?? host.replace(/:\d+$/, ''),
+    origin: process.env.RP_ORIGIN ?? `${protocol}://${host}`,
+  };
 }
 
 async function setChallengeCookie(name: string, payload: ChallengePayload) {

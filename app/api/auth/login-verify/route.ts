@@ -3,10 +3,11 @@ import { isoBase64URL } from '@simplewebauthn/server/helpers';
 import { NextRequest, NextResponse } from 'next/server';
 import { createSession } from '@/lib/auth';
 import { authenticatorDB, userDB } from '@/lib/db';
-import { consumeLoginChallenge } from '@/lib/webauthn';
+import { consumeLoginChallenge, resolveWebAuthnConfig } from '@/lib/webauthn';
 
 export async function POST(request: NextRequest) {
   try {
+    const { origin, rpID } = resolveWebAuthnConfig(request);
     const body = (await request.json()) as { username?: string; response?: Record<string, unknown> };
     const username = body.username?.trim();
     if (!username || !body.response) {
@@ -31,8 +32,8 @@ export async function POST(request: NextRequest) {
     const verification = await verifyAuthenticationResponse({
       response: body.response as never,
       expectedChallenge: challenge.challenge,
-      expectedOrigin: process.env.RP_ORIGIN ?? 'http://localhost:3000',
-      expectedRPID: process.env.RP_ID ?? 'localhost',
+      expectedOrigin: origin,
+      expectedRPID: rpID,
       credential: {
         id: authenticator.credential_id,
         publicKey: isoBase64URL.toBuffer(authenticator.public_key),

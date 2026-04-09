@@ -3,7 +3,7 @@ import { isoBase64URL } from '@simplewebauthn/server/helpers';
 import { NextRequest, NextResponse } from 'next/server';
 import { createSession } from '@/lib/auth';
 import { authenticatorDB, userDB } from '@/lib/db';
-import { consumeRegisterChallenge } from '@/lib/webauthn';
+import { consumeRegisterChallenge, resolveWebAuthnConfig } from '@/lib/webauthn';
 
 function credentialIdToString(input: unknown) {
   if (typeof input === 'string') return input;
@@ -17,6 +17,7 @@ function publicKeyToString(input: unknown) {
 
 export async function POST(request: NextRequest) {
   try {
+    const { origin, rpID } = resolveWebAuthnConfig(request);
     const body = (await request.json()) as { username?: string; response?: Record<string, unknown> };
     const username = body.username?.trim();
     if (!username || !body.response) {
@@ -31,8 +32,8 @@ export async function POST(request: NextRequest) {
     const verification = await verifyRegistrationResponse({
       response: body.response as never,
       expectedChallenge: challenge.challenge,
-      expectedOrigin: process.env.RP_ORIGIN ?? 'http://localhost:3000',
-      expectedRPID: process.env.RP_ID ?? 'localhost',
+      expectedOrigin: origin,
+      expectedRPID: rpID,
     });
 
     if (!verification.verified || !verification.registrationInfo) {

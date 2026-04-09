@@ -1,7 +1,7 @@
 import { generateRegistrationOptions } from '@simplewebauthn/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticatorDB, userDB } from '@/lib/db';
-import { storeRegisterChallenge } from '@/lib/webauthn';
+import { resolveWebAuthnConfig, storeRegisterChallenge } from '@/lib/webauthn';
 
 export async function POST(request: NextRequest) {
   const { username } = (await request.json()) as { username?: string };
@@ -13,8 +13,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Username already exists' }, { status: 400 });
   }
 
+  const { rpID } = resolveWebAuthnConfig(request);
   const options = await generateRegistrationOptions({
-    rpID: process.env.RP_ID ?? 'localhost',
+    rpID,
     rpName: process.env.RP_NAME ?? 'Todo App',
     userName: normalized,
     attestationType: 'none',

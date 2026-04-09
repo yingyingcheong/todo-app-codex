@@ -17,6 +17,11 @@ This folder contains the Todo App and its app-local PRP references.
 3. Run `npm run seed:holidays`
 4. Run `npm run dev`
 
+## Deployment Notes
+- For WebAuthn/passkeys in production, set `RP_ID` to your public hostname and `RP_ORIGIN` to your full site origin.
+- Example Railway values: `RP_ID=your-app.up.railway.app` and `RP_ORIGIN=https://your-app.up.railway.app`
+- If these env vars are omitted, the app now falls back to the incoming request host and protocol.
+
 ## References
 - `.github/PRPs/todo-app-core-features.md`
 - `.github/PRPs/reference/README.md`
